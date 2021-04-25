@@ -1,4 +1,5 @@
 <template>
+<div>
   <table>
     <tbody class="mail-table">
       <tr v-for="email in unarchivedEmails"
@@ -18,17 +19,19 @@
       </tr>
     </tbody>
   </table>
+  </div>
 </template>
 
 <script>
+  import {computed, reactive, toRefs} from 'vue';
   import {format} from 'date-fns';
 
   export default {
     async setup() {
-      await new Promise(res => setTimeout(res, 3000));
-      return {
-        format,
-        "emails": [
+
+      await new Promise(res => setTimeout(res, 1000));
+      const state = reactive({
+        emails: [
           {
             "id": 1,
             "from": "team@vuemastery.com",
@@ -66,19 +69,21 @@
             "read": false
           }
         ]
+      });
+
+      const unarchivedEmails = computed(() => {
+        const filtered = state.emails.sort((e1, e2) => {
+          return e1.sendAt < e2.sentAt ? 1 : -1;
+        }).filter(e => !e.archived)
+
+        return filtered;
+      })
+
+      return {
+        format,
+        unarchivedEmails,
+        ...toRefs(state),
       }
     },
-    computed: {
-      sortedEmails() {
-        return this.emails.sort((e1, e2) => {
-          return e1.sentAt < e2.sentAt ? 1 : -1;
-        })
-      },
-      unarchivedEmails() {
-        const a = this.sortedEmails;
-        console.log(`a`, a)
-        return this.sortedEmails.filter(e => !e.archived);
-      }
-  }
   }
 </script>
