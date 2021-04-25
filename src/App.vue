@@ -12,9 +12,16 @@
 
 <script>
 import MailTable from "@/components/MailTable";
+import useEmailSelection from '@/composable/useEmailSelection'
+
 export default {
   name: 'App',
   components: { MailTable },
+  setup() {
+    return {
+      emailSelection: useEmailSelection()
+    }
+  }
 };
 </script>
 
