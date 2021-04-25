@@ -20,8 +20,11 @@
       </tr>
     </tbody>
   </table>
-  <ModalView v-if="openedEmail" @closeModal="openedEmail = null">
-    <MailView :email="openedEmail" />
+  <ModalView
+    v-if="openedEmail"
+    @closeModal="openedEmail = null"
+  >
+    <MailView :email="openedEmail" @changeEmail="changeEmail" />
   </ModalView>
 </div>
 </template>
@@ -32,8 +35,8 @@
   import axios from "axios";
   import MailView from "@/components/MailView.vue"
   import ModalView from "@/components/ModalView.vue"
+  import Endpoint from "@/utils/endpoint";
 
-  const Endpoint = "http://localhost:3000/emails";
 
   export default {
     components: { MailView, ModalView },
@@ -64,13 +67,33 @@
       }
 
       const openEmail = (email) => {
-        email.read = true;
-        updateEmail(email);
         state.openedEmail = email
+        if(email) {
+          email.read = true;
+          updateEmail(email);
+        }
       }
+
       const archiveEmail = (email) => {
         email.archived = true;
         updateEmail(email);
+      }
+
+      const changeEmail = ({toggleRead, toggleArchive, save, closeModal, changeIndex}) => {
+        let email = state.openedEmail;
+        if(toggleRead) email.read = !email.read;
+        if(toggleArchive) email.archived = !email.archived;
+        if(save) updateEmail(email)
+        if(closeModal) state.openedEmail = null;
+
+        if(changeIndex) {
+          let emails = unarchivedEmails;
+          let currentIndex = emails.value.findIndex(mail => mail.id === state.openedEmail.id)
+
+          const newEmail = emails.value[currentIndex + changeIndex]
+
+          openEmail(newEmail);
+        }
       }
 
       return {
@@ -78,6 +101,7 @@
         unarchivedEmails,
         archiveEmail,
         openEmail,
+        changeEmail,
         ...toRefs(state),
       }
     },
