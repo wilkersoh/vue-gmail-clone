@@ -1,82 +1,61 @@
 <template>
   <div class="bulk-action-bar">
     <span class="checkbox">
-      <input type="checkbox" 
-             :checked="allAreSelected"
-             :class="[partialSelection ? 'partial-check' : '']"
-             @click="bulkSelect">
+    <input type="checkbox"
+      :checked="allEmailsSelected"
+      :class="[someEmailsSelected ? 'partial-check' : '']"
+      @click="blukSelect"
+    />
     </span>
-    
     <span class="buttons">
       <button @click="emailSelection.markRead()"
-              :disabled="Array.from(emailSelection.emails).every(e => e.read)">
-        Mark Read
-      </button>
-      <button @click="emailSelection.markUnread()" 
-              :disabled="Array.from(emailSelection.emails).every(e => !e.read)">
-        Mark Unread
-      </button>
-      <button v-if="selectedScreen == 'inbox'"
-              @click="emailSelection.archive()" 
-              :disabled="numberSelected == 0">
-        Archive
-      </button>
-      <button v-else
-              @click="emailSelection.moveToInbox()" 
-              :disabled="numberSelected == 0">
-        Move to Inbox
-      </button>
+              :disabled="Array.from(emailSelection.emails).every(e => e.read)"
+      >Mark Read</button>
+      <button @click="emailSelection.markUnread()"
+              :disabled="Array.from(emailSelection.emails).every(e => !e.read)"
+      >Mark Unread</button>
+      <button @click="emailSelection.archive()"
+              :disabled="emailSelection.emails.size === 0"
+      >Archive</button>
     </span>
   </div>
 </template>
 
 <script>
-  import { useEmailSelection } from '../composition/useEmailSelection';
-  import { computed } from 'vue';
+  import {computed} from 'vue'
+  import useEmailSelection from '@/composable/useEmailSelection';
 
   export default {
-    setup(props){
-      let emailSelection = useEmailSelection();
-
-      let numberSelected = computed(() => {
-        return emailSelection.emails.size;
-      }) 
-      let allAreSelected = computed(() => {
-        return props.emails.length == numberSelected.value && numberSelected.value !== 0;
-      })
-      let partialSelection = computed(() => {
-        return numberSelected.value > 0 && !allAreSelected.value;
-      })
-      
-      let bulkSelect = function(){
-        if(allAreSelected.value) {
-          emailSelection.clear();
-        } else {
-          emailSelection.addMultiple(props.emails)
-        }
-      }
-
-      return { 
-        partialSelection, 
-        allAreSelected,
-        bulkSelect,
-        emailSelection,
-        numberSelected
-      }
-    },
     props: {
       emails: {
         type: Array,
-        required: true
-      }, 
-      selectedScreen: {
-        type: String,
-        required: true
+        required: true,
+      }
+    },
+    setup(props) {
+      const emailSelection = useEmailSelection();
+      /*  computed 會 轉換去 ref 所以需要.value */
+      const numberSelected = computed(() => emailSelection.emails.size);
+      const numberEmails = computed(() => props.emails.length);
+
+      const allEmailsSelected = computed(() => numberSelected.value === numberEmails.value)
+      const someEmailsSelected = computed(() => numberSelected.value > 0 && numberSelected .value < numberEmails.value)
+
+      const blukSelect = () => {
+        if(allEmailsSelected.value) {
+          emailSelection.clear();
+        } else {
+          emailSelection.addMultiple(props.emails);
+        }
+      }
+
+      return {
+        allEmailsSelected,
+        someEmailsSelected,
+        blukSelect,
+        emailSelection,
       }
     }
   }
 </script>
 
-<style scoped>
-
-</style>
