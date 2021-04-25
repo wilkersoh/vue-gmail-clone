@@ -20,8 +20,9 @@
       </tr>
     </tbody>
   </table>
-  <MailView v-if="openedEmail" :email="openedEmail" />
-
+  <ModalView v-if="openedEmail" @closeModal="openedEmail = null">
+    <MailView :email="openedEmail" />
+  </ModalView>
 </div>
 </template>
 
@@ -30,11 +31,12 @@
   import {format} from 'date-fns';
   import axios from "axios";
   import MailView from "@/components/MailView.vue"
+  import ModalView from "@/components/ModalView.vue"
 
   const Endpoint = "http://localhost:3000/emails";
 
   export default {
-    components: {MailView},
+    components: { MailView, ModalView },
     async setup() {
       const state = reactive({
         emails: [],
